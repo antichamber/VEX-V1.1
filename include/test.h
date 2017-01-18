@@ -65,7 +65,7 @@ void update_hardware(){
     motorSet(left_motor_b, 0 - scaler[0 - motor_left_slew]);
     motorSet(left_motor_c, 0 - scaler[0 - motor_left_slew]);
   }else{
-    motorSet(left_motor_a, scaler[motor_left_slew]);
+    motorSet(left_motor_a, 0 - scaler[0 - motor_left_slew]);
     motorSet(left_motor_b, 0 - scaler[0 - motor_left_slew]);
     motorSet(left_motor_c, 0 - scaler[0 - motor_left_slew]);
   }

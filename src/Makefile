@@ -1,11 +1,9 @@
-# Universal C Makefile for MCU targets
+# Makefile for compiling PROS projects
 
-# Path to project root (for top-level, so the project is in ./; first-level, ../; etc.)
-ROOT=.
+# Path to project root (NO trailing slash!)
+ROOT=..
 # Binary output directory
 BINDIR=$(ROOT)/bin
-# Subdirectories to include in the build
-SUBDIRS=src
 
 # Nothing below here needs to be modified by typical users
 
@@ -15,55 +13,38 @@ SUBDIRS=src
 ASMSRC:=$(wildcard *.$(ASMEXT))
 ASMOBJ:=$(patsubst %.o,$(BINDIR)/%.o,$(ASMSRC:.$(ASMEXT)=.o))
 HEADERS:=$(wildcard *.$(HEXT))
+### Special section for Cortex projects ###
+HEADERS_2:=$(wildcard ../include/*.$(HEXT))
+### End special section ###
 CSRC=$(wildcard *.$(CEXT))
 COBJ:=$(patsubst %.o,$(BINDIR)/%.o,$(CSRC:.$(CEXT)=.o))
 CPPSRC:=$(wildcard *.$(CPPEXT))
 CPPOBJ:=$(patsubst %.o,$(BINDIR)/%.o,$(CPPSRC:.$(CPPEXT)=.o))
 OUT:=$(BINDIR)/$(OUTNAME)
 
-.PHONY: all clean upload _force_look
+.PHONY: all
 
 # By default, compile program
-all: $(BINDIR) $(OUT)
+all: .
 
-# Remove all intermediate object files (remove the binary directory)
-clean:
-	-rm -f $(OUT)
-	-rm -rf $(BINDIR)
-
-# Uploads program to device
-upload: all
-	$(UPLOAD)
-
-# Phony force-look target
-_force_look:
-	@true
-
-# Looks in subdirectories for things to make
-$(SUBDIRS): %: _force_look
-	@$(MAKE) --no-print-directory -C $@
-
-# Ensure binary directory exists
-$(BINDIR):
-	-@mkdir -p $(BINDIR)
-
-# Compile program
-$(OUT): $(SUBDIRS) $(ASMOBJ) $(COBJ) $(CPPOBJ)
-	@echo LN $(BINDIR)/*.o $(LIBRARIES) to $@
-	@$(CC) $(LDFLAGS) $(BINDIR)/*.o $(LIBRARIES) -o $@
-	@$(MCUPREFIX)size $(SIZEFLAGS) $(OUT)
-	$(MCUPREPARE)
+# Compiles the program if anything is changed
+.: $(ASMOBJ) $(COBJ) $(CPPOBJ)
+	@touch .
 
 # Assembly source file management
-$(ASMOBJ): $(BINDIR)/%.o: %.$(ASMEXT) $(HEADERS)
+$(ASMOBJ): $(BINDIR)/%.o: %.$(ASMEXT)
 	@echo AS $<
 	@$(AS) $(AFLAGS) -o $@ $<
 
-# Object management
-$(COBJ): $(BINDIR)/%.o: %.$(CEXT) $(HEADERS)
-	@echo CC $(INCLUDE) $<
-	$(CC) $(INCLUDE) $(CFLAGS) -o $@ $<
+### Special section for Cortex projects ###
 
-$(CPPOBJ): $(BINDIR)/%.o: %.$(CPPEXT) $(HEADERS)
+# Object management
+$(COBJ): $(BINDIR)/%.o: %.$(CEXT) $(HEADERS) $(HEADERS_2)
+	@echo CC $(INCLUDE) $<
+	@$(CC) $(INCLUDE) $(CFLAGS) -o $@ $<
+
+$(CPPOBJ): $(BINDIR)/%.o: %.$(CPPEXT) $(HEADERS) $(HEADERS_2)
 	@echo CPC $(INCLUDE) $<
 	@$(CPPCC) $(INCLUDE) $(CPPFLAGS) -o $@ $<
+
+### End special section ###

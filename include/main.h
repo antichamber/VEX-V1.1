@@ -13,7 +13,7 @@ extern "C" {
 #define leda = 8
 #define ledb = 9
 #define ledc = 10
-//#define button_enter 11
+#define button_enter 11
 #define button_select 12
 #define left_motor_a 10
 #define left_motor_b 8

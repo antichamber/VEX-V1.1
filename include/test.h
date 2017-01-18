@@ -5,21 +5,17 @@ const unsigned int scaler[130] = {0,0,0,0,10,10,10,11,11,11,11,11,11,11,12,12,13
 int left_motor_speed = 0;
 int right_motor_speed = 0;
 int arm_motor_speed = 0;
-int claw_motor_speed = 0;
-int knocker_motor_speed = 0;
 int temp_a = 0;
 int temp_b = 0;
 
-bool assist_piston = false;        //used to store the state of the speed control piston
-bool assist_toggle = true;         //used to keep track of if the piston has been properly instructed
-bool knocker_piston = false;        //used to store the state of the speed control piston
-bool knocker_toggle = true;         //used to keep track of if the piston has been properly instructed
+bool assist_piston = false;        //used to store the state of the assist piston3
+bool assist_toggle = true;         //used to keep track of if the pistons has been properly instructed
+bool claw_piston = false;        //used to store the state of the claw pistons
+bool claw_toggle = true;         //used to keep track of if the pistons has been properly instructed
 
 int motor_arm_slew = 0;
 int motor_left_slew = 0;
 int motor_right_slew = 0;
-int motor_claw_slew = 0;
-int motor_knocker_slew = 0;
 
 void slew_motor_task(){
   if(motor_arm_slew - arm_motor_speed >= 5){
@@ -45,50 +41,42 @@ void slew_motor_task(){
   }else{
     motor_right_slew = right_motor_speed;
   }
-
-  if(motor_claw_slew - claw_motor_speed >= 6){
-    motor_claw_slew -= 6;
-  }else if(motor_claw_slew - claw_motor_speed <= -6){
-    motor_claw_slew += 6;
-  }else{
-    motor_claw_slew = claw_motor_speed;
-  }
-
-  if(motor_knocker_slew - knocker_motor_speed >= 4){
-    motor_knocker_slew -= 4;
-  }else if(motor_knocker_slew - knocker_motor_speed <= -4){
-    motor_knocker_slew += 4;
-  }else{
-    motor_knocker_slew = knocker_motor_speed;
-  }
 }
 
 
 void update_hardware(){
   slew_motor_task();
   if(assist_piston == 0 && assist_toggle == 1){
-    digitalWrite(piston_b, LOW);
+    digitalWrite(assist_piston_pin, LOW);
     assist_toggle = 0;
   }else if(assist_piston == 1 && assist_toggle == 0){
-    digitalWrite(piston_b, HIGH);
+    digitalWrite(assist_piston_pin, HIGH);
     assist_toggle = 1;
-  }                                   //used to set all pneuamatics and motors to their proper speed/position
-  if(knocker_piston == 0 && knocker_toggle == 1){
-    digitalWrite(piston_a, LOW);
-    knocker_toggle = 0;
-    if(motor_arm_slew < 0){                                             //asking for a negitive number from the scaler will break the program, so this inserts a double negitive if nessisary
-      motorSet(arm_motor_d, 0 - scaler[0 - motor_arm_slew]);
-    }else{
-      motorSet(arm_motor_d, scaler[motor_arm_slew]);
-    }
-  }else if(knocker_piston == 1 && knocker_toggle == 0){
-    digitalWrite(piston_a, HIGH);
-    knocker_toggle = 1;
-    if(knocker_motor_speed < 0){                                             //asking for a negitive number from the scaler will break the program, so this inserts a double negitive if nessisary
-      motorSet(arm_motor_d, 0 - scaler[0 - motor_knocker_slew]);
-    }else{
-      motorSet(arm_motor_d, scaler[motor_knocker_slew]);
-    }
+  }
+  if(claw_piston == 0 && claw_toggle == 1){
+    digitalWrite(claw_piston_pin, LOW);
+    claw_toggle = 0;
+  }else if(claw_piston == 1 && claw_toggle == 0){
+    digitalWrite(claw_piston_pin, HIGH);
+    claw_toggle = 1;
+  }                                //used to set all pneuamatics and motors to their proper speed/position
+  if(motor_left_slew < 0){                                             //asking for a negitive number from the scaler will break the program, so this inserts a double negitive if nessisary
+    motorSet(left_motor_a, 0 - scaler[0 - motor_left_slew]);            //this assigns the arm motors arm speed
+    motorSet(left_motor_b, 0 - scaler[0 - motor_left_slew]);
+    motorSet(left_motor_c, 0 - scaler[0 - motor_left_slew]);
+  }else{
+    motorSet(left_motor_a, scaler[motor_left_slew]);
+    motorSet(left_motor_b, 0 - scaler[0 - motor_left_slew]);
+    motorSet(left_motor_c, 0 - scaler[0 - motor_left_slew]);
+  }
+  if(motor_right_slew < 0){                                             //asking for a negitive number from the scaler will break the program, so this inserts a double negitive if nessisary
+    motorSet(right_motor_a, 0 - scaler[0 - motor_right_slew]);            //this assigns the arm motors arm speed
+    motorSet(right_motor_b, 0 - scaler[0 - motor_right_slew]);
+    motorSet(right_motor_c, 0 - scaler[0 - motor_right_slew]);
+  }else{
+    motorSet(right_motor_a, scaler[motor_right_slew]);
+    motorSet(right_motor_b, scaler[motor_right_slew]);
+    motorSet(right_motor_c, scaler[motor_right_slew]);
   }
   if(motor_arm_slew < 0){                                             //asking for a negitive number from the scaler will break the program, so this inserts a double negitive if nessisary
     motorSet(arm_motor_a, 0 - scaler[0 - motor_arm_slew]);            //this assigns the arm motors arm speed
@@ -100,26 +88,5 @@ void update_hardware(){
     motorSet(arm_motor_b, scaler[motor_arm_slew]);
     motorSet(arm_motor_c, scaler[motor_arm_slew]);
     motorSet(arm_motor_d, scaler[motor_arm_slew]);
-  }
-  if(motor_claw_slew < 0){                                            //asking for a negitive number from the scaler will break the program, so this inserts a double negitive if nessisary
-    motorSet(claw_motor_a, 0 - scaler[0 - motor_claw_slew]);          //this assigns the claw motors claw speed
-    motorSet(claw_motor_b, 0 - scaler[0 - motor_claw_slew]);
-  }else{
-    motorSet(claw_motor_a, scaler[motor_claw_slew]);
-    motorSet(claw_motor_b, scaler[motor_claw_slew]);
-  }
-  if(motor_left_slew < 0){                                            //asking for a negitive number from the scaler will break the program, so this inserts a double negitive if nessisary
-    motorSet(left_motor_a, 0 - scaler[0 - motor_left_slew]);          //this assigns the claw motors claw speed
-    motorSet(left_motor_b, 0 - scaler[0 - motor_left_slew]);
-  }else{
-    motorSet(left_motor_a, scaler[motor_left_slew]);
-    motorSet(left_motor_b, scaler[motor_left_slew]);
-  }
-  if(motor_right_slew < 0){                                            //asking for a negitive number from the scaler will break the program, so this inserts a double negitive if nessisary
-    motorSet(right_motor_a, 0 - scaler[0 - motor_right_slew]);          //this assigns the claw motors claw speed
-    motorSet(right_motor_b, 0 - scaler[0 - motor_right_slew]);
-  }else{
-    motorSet(right_motor_a, scaler[motor_right_slew]);
-    motorSet(right_motor_b, scaler[motor_right_slew]);
   }
 }

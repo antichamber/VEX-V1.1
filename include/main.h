@@ -13,18 +13,18 @@ extern "C" {
 #define leda = 8
 #define ledb = 9
 #define ledc = 10
-#define button_enter 11
-#define button_select 12
-#define left_motor_a 10
-#define left_motor_b 8
-#define right_motor_a 1
-#define right_motor_b 3
-#define arm_motor_a 9
-#define arm_motor_b 2
-#define arm_motor_c 5
-#define arm_motor_d 6
-#define claw_motor_a 7
-#define claw_motor_b 4
+#define left_motor_a 
+#define left_motor_b 
+#define left_motor_c 
+#define right_motor_a 
+#define right_motor_b 
+#define right_motor_c
+#define arm_motor_a 
+#define arm_motor_b 
+#define arm_motor_c 
+#define arm_motor_d 
+#define claw_motor_a 
+#define claw_motor_b 
 #define arm_pot_a 1
 #define arm_pot_b 2
 #define arm_adjust_a 100
@@ -39,3 +39,4 @@ void operatorControl();
 }
 #endif
 #endif
+
